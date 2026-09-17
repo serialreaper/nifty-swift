@@ -9,55 +9,46 @@ import SwiftUI
 
 // SPLASH SCREEN VIEW - displays app name and button
 struct SplashScreenView: View {
-    @State private var goToDashboard = false
+    @Binding var goToDashboard: Bool
+    
     @EnvironmentObject var controller: FindController
     
     var body: some View {
-        // VSTACK
-        NavigationStack{
-            VStack {
-                // TEXT
-                Spacer()
-                
-                Text("Nifty")
-                    .font(.berkshireSwash(size: 77))
-                    .foregroundStyle(Color.white)
-                
-                Spacer()
-                
-                // BUTTON
-                Button {
-                    goToDashboard = true
-                } label: {
-                    Text("Get Started")
-                        .font(.calSans(size: 20))
-                        .frame(width: 197)
-                    
-                }
-                
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.roundedRectangle(radius: 5))
-                .tint(Color("NiftyGreen"))
-                .foregroundStyle(Color.black)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 5)
-                        .stroke(Color.black, lineWidth: 1)
-                }
-                .padding(.bottom, 40)
+        VStack {
+            
+            // TEXT
+            Spacer()
+            
+            Text("Nifty")
+                .font(.berkshireSwash(size: 77))
+                .foregroundStyle(Color.white)
+            
+            Spacer()
+            
+            // BUTTON
+            Button {
+                goToDashboard = true
+            } label: {
+                Text("Get Started")
+                    .font(.calSans(size: 20))
+                    .frame(width: 197)
             }
-            .navigationDestination(isPresented: $goToDashboard) {
-                MainTabView()
-                .navigationBarBackButtonHidden(true)
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.roundedRectangle(radius: 5))
+            .tint(Color("NiftyGreen"))
+            .foregroundStyle(Color.black)
+            .overlay {
+                RoundedRectangle(cornerRadius: 5)
+                    .stroke(Color.black, lineWidth: 1)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color("NiftyRed"))
+            .padding(.bottom, 40)
         }
-        
-        
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color("NiftyRed"))
     }
 }
 
 #Preview {
-    SplashScreenView()
+    SplashScreenView(goToDashboard: .constant(false))
         .environmentObject(FindController())
 }

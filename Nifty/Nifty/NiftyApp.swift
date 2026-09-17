@@ -9,12 +9,12 @@ import SwiftUI
 
 @main
 struct NiftyApp: App {
-    @StateObject private var findController = FindController()
-
+    @StateObject private var controller = FindController()
+    
     var body: some Scene {
         WindowGroup {
-            SplashScreenView()
-                .environmentObject(findController)
+            ContentView()
+                .environmentObject(controller)
         }
     }
 }

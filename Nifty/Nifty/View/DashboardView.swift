@@ -28,6 +28,7 @@ struct DashboardView: View {
                         StatCard(value: "\(Int(controller.totalSpentOnBuys))", label: "Total Spent on buys", backgroundColor: Color("NiftyGreen"), textColor: .white, height: 140)
                     }
                 }
+                .padding(.bottom, 30)
 
                 Text("Still Considering")
                     .font(.calSans(size: 20))
@@ -53,7 +54,7 @@ struct DashboardView: View {
                 }
             }
             .padding()
-            .padding(.bottom, 80)
+            //.padding(.bottom, 80)
         }
     }
 }

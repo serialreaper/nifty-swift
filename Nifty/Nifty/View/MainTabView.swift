@@ -13,18 +13,22 @@ enum AppTab {
 
 struct MainTabView: View {
     @EnvironmentObject var controller: FindController
+    
     @State private var selectedTab: AppTab = .home
     @State private var previousTab: AppTab = .home
     
     var body: some View {
         
         TabView(selection: $selectedTab) {
+            
+            // HOME
             DashboardView()
                 .tabItem {
                     Label("", systemImage: "house.fill")
                 }
                 .tag(AppTab.home)
             
+            // ADD FIND
             AddFindView(onBack: {
                 selectedTab = previousTab
             })
@@ -33,6 +37,7 @@ struct MainTabView: View {
             }
             .tag(AppTab.add)
             
+            // SEARCH
             FindsListView()
                 .tabItem {
                     Label("", systemImage: "magnifyingglass")
@@ -43,8 +48,8 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue != .add {
                 previousTab = newValue
-            }}
-        
+            }
+        }
     }
 }
 

@@ -2,17 +2,21 @@
 //  ContentView.swift
 //  Nifty
 //
-//  Created by Mac-LAB on 9/15/26.
-//
 
 import SwiftUI
-/*
+
 struct ContentView: View {
     @EnvironmentObject var controller: FindController
+    
+    @State private var goToDashboard = false
+    
     var body: some View {
-        WindowGroup {
-            SplashScreenView()
-            MainTabView()
+        Group {
+            if goToDashboard {
+                MainTabView()
+            } else {
+                SplashScreenView(goToDashboard: $goToDashboard)
+            }
         }
     }
 }
@@ -21,4 +25,3 @@ struct ContentView: View {
     ContentView()
         .environmentObject(FindController())
 }
-*/

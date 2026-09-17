@@ -59,7 +59,10 @@ struct AddFindView: View {
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(Color(.systemGray6))
                                     .frame(width: 64, height: 64)
-                                    .overlay(Image(systemName: "plus").foregroundColor(.gray))
+                                    .overlay {
+                                        Image(systemName: "plus")
+                                            .foregroundColor(.gray)
+                                    }
                             }
                         }
                         .onChange(of: selectedPhoto) { _, newItem in
@@ -88,6 +91,7 @@ struct AddFindView: View {
                                 .background(Color(.systemGray6))
                                 .cornerRadius(8)
                         }
+                        
                         VStack(alignment: .leading, spacing: 6) {
                             fieldLabel("STORE/WHERE FOUND")
                             TextField("", text: $storeFound)
@@ -112,8 +116,16 @@ struct AddFindView: View {
                                 .font(.system(size: 12, weight: .semibold))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 8)
-                                .background(condition == option ? Color("NiftyGreen") : Color(.systemGray6))
-                                .foregroundColor(condition == option ? .white : .black)
+                                .background(
+                                    condition == option
+                                    ? Color("NiftyGreen")
+                                    : Color(.systemGray6)
+                                )
+                                .foregroundColor(
+                                    condition == option
+                                    ? .white
+                                    : .black
+                                )
                                 .cornerRadius(8)
                                 .onTapGesture {
                                     condition = option
@@ -147,7 +159,8 @@ struct AddFindView: View {
             .navigationTitle("Add New Find")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
                         if hasUnsavedChanges {
                             showDiscardConfirm = true
@@ -161,7 +174,8 @@ struct AddFindView: View {
                         }
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                
+                ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
                         save()
                     }
@@ -169,48 +183,77 @@ struct AddFindView: View {
                     .fontWeight(.semibold)
                 }
             }
-            .alert("Discard this find?", isPresented: $showDiscardConfirm) {
+            .alert(
+                "Discard this find?",
+                isPresented: $showDiscardConfirm
+            ) {
                 Button("Cancel", role: .cancel) {}
-                Button("Discard", role: .destructive) { onBack() }
+                
+                Button("Discard", role: .destructive) {
+                    onBack()
+                }
             } message: {
-                Text("Your changes haven't been saved. If you leave now, this find will be lost.")
+                Text(
+                    "Your changes haven't been saved. If you leave now, this find will be lost."
+                )
             }
-            .alert("Your find has been saved.", isPresented: $showSavedConfirm) {
-                Button("Okay") { onBack() }
+            .alert(
+                "Your find has been saved.",
+                isPresented: $showSavedConfirm
+            ) {
+                Button("Okay") {
+                    onBack()
+                }
             }
         }
     }
     
     private var hasUnsavedChanges: Bool {
-        !findName.isEmpty || !price.isEmpty || !storeFound.isEmpty || !brand.isEmpty
+        !findName.isEmpty ||
+        !price.isEmpty ||
+        !storeFound.isEmpty ||
+        !brand.isEmpty
     }
     
-    private func fieldLabel(_ text: String, required: Bool = false) -> some View {
+    private func fieldLabel(
+        _ text: String,
+        required: Bool = false
+    ) -> some View {
         Text(required ? "\(text)*" : text)
             .font(.system(size: 11, weight: .bold))
             .foregroundColor(.secondary)
     }
     
-    /// Converts the display-friendly condition string ("Needs Repair") into
-    /// the matching FindCondition enum case (.needsRepair) used by the model.
-    private func conditionValue(from displayString: String) -> FindCondition {
+    private func conditionValue(
+        from displayString: String
+    ) -> FindCondition {
         switch displayString {
-        case "Excellent": return .excellent
-        case "Good": return .good
-        case "Needs Repair": return .needsRepair
-        case "Heavily Worn": return .heavilyWorn
-        default: return .excellent
+        case "Excellent":
+            return .excellent
+            
+        case "Good":
+            return .good
+            
+        case "Needs Repair":
+            return .needsRepair
+            
+        case "Heavily Worn":
+            return .heavilyWorn
+            
+        default:
+            return .excellent
         }
     }
     
     private func save() {
-        // ITEM NAME and PRICE are required (marked * in the Figma form).
-        // PRICE must also successfully convert from the text field's String to a Double.
-        guard !findName.trimmingCharacters(in: .whitespaces).isEmpty,
+        guard !findName
+            .trimmingCharacters(in: .whitespaces)
+            .isEmpty,
               let priceValue = Double(price) else {
             showValidationError = true
             return
         }
+        
         showValidationError = false
         
         let newFind = Find(
@@ -225,6 +268,7 @@ struct AddFindView: View {
             status: .considering,
             image: selectedImageData
         )
+        
         controller.addFind(newFind)
         showSavedConfirm = true
     }
