@@ -97,49 +97,6 @@ final class FindController: ObservableObject {
 
 extension FindController {
     static let sampleFinds: [Find] = [
-        Find(
-            findName: "Leopard Camisole Top",
-            price: 50,
-            storeName: "Iyaman",
-            brand: "Uniqlo",
-            condition: .good,
-            issues: "There are stains and holes.",
-            repairNotes: "Wash and sew",
-            personalNotes: "I like it so much but I have no money yet.",
-            status: .considering
-        ),
-        Find(
-            findName: "Leopard Camisole Top",
-            price: 50,
-            storeName: "Iyaman",
-            brand: "Uniqlo",
-            condition: .good,
-            issues: "There are stains and holes.",
-            repairNotes: "Wash and sew",
-            personalNotes: "I like it so much but I have no money yet.",
-            status: .considering
-        ),
-        Find(
-            findName: "Leopard Camisole Top",
-            price: 50,
-            storeName: "Iyaman",
-            brand: "Uniqlo",
-            condition: .good,
-            issues: "There are stains and holes.",
-            repairNotes: "Wash and sew",
-            personalNotes: "I like it so much but I have no money yet.",
-            status: .considering
-        ),
-        Find(
-            findName: "Leopard Camisole Top",
-            price: 50,
-            storeName: "Iyaman",
-            brand: "Uniqlo",
-            condition: .good,
-            issues: "There are stains and holes.",
-            repairNotes: "Wash and sew",
-            personalNotes: "I like it so much but I have no money yet.",
-            status: .considering
-        )
+        
     ]
 }

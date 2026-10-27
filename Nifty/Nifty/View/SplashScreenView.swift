@@ -17,13 +17,30 @@ struct SplashScreenView: View {
         VStack {
             
             // TEXT
-            Spacer()
+            
             
             Text("Nifty")
-                .font(.berkshireSwash(size: 77))
+                .padding(.top, 35)
+                .font(.berkshireSwash(size: 48))
                 .foregroundStyle(Color.white)
             
+            Text("Pause. Ponder. Pocket the win.")
+                .font(.calSans(size: 20))
+                .foregroundStyle(Color("NiftyYellow"))
+            
             Spacer()
+            
+            Image("nifty-mascot")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 285, height: 285)
+            
+            Spacer()
+            
+            Text("A cheerful little pause between “ooh!” and “order confirmed.”")
+                .padding(.horizontal, 60)
+                .foregroundStyle(Color.white)
+                .multilineTextAlignment(.center)
             
             // BUTTON
             Button {

@@ -23,9 +23,9 @@ struct DashboardFindCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             } else {
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.systemGray5))
+                    .fill(Color("NiftyGreen"))
                     .frame(width: 90, height: 90)
-                    .overlay(Image(systemName: "tshirt.fill").foregroundColor(.gray))
+                    .overlay(Image(systemName: "tshirt").foregroundColor(Color("NiftyRed")))
             }
                 
             VStack(alignment: .leading, spacing: 4) {

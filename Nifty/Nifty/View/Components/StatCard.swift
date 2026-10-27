@@ -15,35 +15,42 @@ struct StatCard: View {
     let height: CGFloat
     
     var body: some View {
-        VStack (alignment: .trailing) {
-            Text(value)
-                .font(.berkshireSwash(size: 80))
-                .foregroundStyle(textColor)
+        VStack (alignment: .leading) {
+
             
             Text(label)
-                .font(.calSans(size: 16))
+                .font(.calSans(size: 14))
                 .foregroundStyle(textColor)
+                .padding(.trailing, 30)
+            
+            Spacer()
+            Text(value)
+                .font(.calSans(size: 26))
+                .foregroundStyle(textColor)
+                .padding(.trailing, 30)
+            
         }
         .frame(maxWidth: .infinity )
         .padding()
         .frame(height: height)
         .background(backgroundColor)
-        .cornerRadius(26)
+        .cornerRadius(16)
     }
 }
 
 #Preview {
     VStack {
         HStack {
-            StatCard(value: "0", label: "Total Considering", backgroundColor: Color("NiftyGreen"), textColor: Color.white, height: 140)
+            StatCard(value: "0", label: "Considering", backgroundColor: Color("NiftyGreen"), textColor: Color.white, height: 98)
 
             
-            StatCard(value: "0", label: "Total Value on hold", backgroundColor: Color("NiftyRed"), textColor: Color.white, height: 180)
+            StatCard(value: "0", label: "Value on Hold", backgroundColor: Color("NiftyRed"), textColor: Color.white, height: 98)
         }
         HStack {
-            StatCard(value: "0", label: "Total Saved by passing", backgroundColor: Color("NiftyRed"), textColor: Color.white, height:180)
+            StatCard(value: "0", label: "Saved by Passing", backgroundColor: Color("NiftyRed"), textColor: Color.white, height:98)
             
-            StatCard(value: "0", label: "Total Spent on buys", backgroundColor: Color("NiftyGreen"), textColor: Color.white, height: 140)
+            StatCard(value: "0", label: "Spent on Buys", backgroundColor: Color("NiftyGreen"), textColor: Color.white, height: 98)
         }
     }
+    .padding()
 }

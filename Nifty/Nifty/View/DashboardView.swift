@@ -20,25 +20,26 @@ struct DashboardView: View {
 
                 VStack {
                     HStack {
-                        StatCard(value: "\(controller.totalConsidering)", label: "Total Considering", backgroundColor: Color("NiftyGreen"), textColor: .white, height: 140)
-                        StatCard(value: "\(Int(controller.totalValueOnHold))", label: "Total Value on hold", backgroundColor: Color("NiftyRed"), textColor: .white, height: 180)
+                        StatCard(value: "\(controller.totalConsidering)", label: "Considering", backgroundColor: Color("NiftyGreen"), textColor: Color("NiftyRed"), height: 98)
+                        StatCard(value: "\(Int(controller.totalValueOnHold))", label: "Value on Hold", backgroundColor: Color("NiftyRed"), textColor: Color("NiftyGreen"), height: 98)
                     }
                     HStack {
-                        StatCard(value: "\(Int(controller.totalSavedByPassing))", label: "Total Saved by passing", backgroundColor: Color("NiftyRed"), textColor: .white, height: 180)
-                        StatCard(value: "\(Int(controller.totalSpentOnBuys))", label: "Total Spent on buys", backgroundColor: Color("NiftyGreen"), textColor: .white, height: 140)
+                        StatCard(value: "\(Int(controller.totalSavedByPassing))", label: "Saved by Passing", backgroundColor: Color("NiftyRed"), textColor: Color("NiftyGreen"), height: 98)
+                        StatCard(value: "\(Int(controller.totalSpentOnBuys))", label: "Spent on Buys", backgroundColor: Color("NiftyGreen"), textColor: Color("NiftyRed"), height: 98)
                     }
                 }
                 .padding(.bottom, 30)
+                
 
                 Text("Still Considering")
                     .font(.calSans(size: 20))
 
                 if controller.finds.isEmpty {
-                    Text("Your thrift basket is empty.")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                    Text("Nothing on your maybe pile")
+                        .font(.calSans(size: 14))
+                        .foregroundColor(Color("NiftyRed"))
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 30)
+                        .padding(.top, 50)
                 } else if controller.consideringFinds.isEmpty {
                     Text("You currently have no considering.")
                         .font(.system(size: 14))

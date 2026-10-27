@@ -15,8 +15,9 @@ struct FindsListView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                Text("FINDS")
-                    .font(.calSans(size: 20))
+                Text("Your finds")
+                    .font(.calSans(size: 32))
+                    .foregroundStyle(Color("NiftyRed"))
 
                 HStack(spacing: 8) {
                     ForEach(FindFilter.allCases, id: \.self) { filter in

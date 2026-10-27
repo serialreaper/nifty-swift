@@ -11,120 +11,126 @@ import PhotosUI
 struct AddFindView: View {
     @EnvironmentObject var controller: FindController
     var onBack: () -> Void
-    
+
     @State private var findName = ""
     @State private var price = ""
     @State private var storeFound = ""
     @State private var brand = ""
-    @State private var condition = "Excellent"
+    @State private var condition = "Good"
     @State private var issues = ""
     @State private var repairNotes = ""
     @State private var personalNotes = ""
-    
+
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImageData: Data?
-    
+
     @State private var showValidationError = false
+    @State private var showPriceValidationError = false
     @State private var showDiscardConfirm = false
     @State private var showSavedConfirm = false
-    
+
     private let conditions = ["Excellent", "Good", "Needs Repair", "Heavily Worn"]
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 14) {
                     
-                    if showValidationError {
+                    if showPriceValidationError {
+                        Text("* The price must be a number.")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color("NiftyRed"))
+                    } else if showValidationError {
                         Text("* Complete the required fields to save this find.")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(Color("NiftyRed"))
                     }
-                    
-                    // PHOTO
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("PHOTO*")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.secondary)
-                        
-                        PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                            if let selectedImageData,
-                               let uiImage = UIImage(data: selectedImageData) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 64, height: 64)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            } else {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(.systemGray6))
-                                    .frame(width: 64, height: 64)
-                                    .overlay {
-                                        Image(systemName: "plus")
-                                            .foregroundColor(.gray)
+
+                    // PHOTO PICKER
+                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                        if let selectedImageData,
+                           let uiImage = UIImage(data: selectedImageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 92)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        } else {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color("NiftyGreen"))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 92)
+                                .overlay {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "camera")
+                                            .foregroundColor(Color("NiftyRed"))
+                                        Text("Add a photo*")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundStyle(Color("NiftyRed"))
                                     }
-                            }
-                        }
-                        .onChange(of: selectedPhoto) { _, newItem in
-                            Task {
-                                if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                                    selectedImageData = data
                                 }
+                        }
+                    }
+                    .onChange(of: selectedPhoto) { _, newItem in
+                        Task {
+                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                                selectedImageData = data
                             }
                         }
                     }
-                    
-                    // ITEM NAME
-                    fieldLabel("ITEM NAME", required: true)
-                    TextField("", text: $findName)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                    
-                    // PRICE + STORE
-                    HStack(spacing: 12) {
+
+                    // NAME & PRICE ROW
+                    HStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            fieldLabel("NAME", required: true)
+                            customTextField(text: $findName, placeholder: "Vintage cherry loafers")
+                        }
+
                         VStack(alignment: .leading, spacing: 6) {
                             fieldLabel("PRICE", required: true)
-                            TextField("", text: $price)
-                                .keyboardType(.decimalPad)
-                                .padding(10)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+                            customTextField(text: $price, placeholder: "$46.00", keyboard: .decimalPad)
                         }
-                        
+                        .frame(width: 110)
+                    }
+
+                    // STORE & BRAND ROW
+                    HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 6) {
-                            fieldLabel("STORE/WHERE FOUND")
-                            TextField("", text: $storeFound)
-                                .padding(10)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+                            fieldLabel("STORE")
+                            customTextField(text: $storeFound, placeholder: "Vinted", icon: "house")
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            fieldLabel("BRAND")
+                            customTextField(text: $brand, placeholder: "Merry People", icon: "tag")
                         }
                     }
-                    
-                    // BRAND
-                    fieldLabel("BRAND")
-                    TextField("", text: $brand)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                    
+
                     // CONDITION TAGS
                     fieldLabel("CONDITION", required: true)
                     HStack(spacing: 8) {
                         ForEach(conditions, id: \.self) { option in
                             Text(option)
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 12, weight: .medium))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 8)
                                 .background(
                                     condition == option
-                                    ? Color("NiftyGreen")
-                                    : Color(.systemGray6)
+                                    ? Color("NiftyRed")
+                                    : Color(.white)
                                 )
                                 .foregroundColor(
                                     condition == option
                                     ? .white
-                                    : .black
+                                    : Color("NiftyRed")
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(
+                                            condition == option ? Color.clear : Color("NiftyRed"),
+                                            lineWidth: 2
+                                        )
                                 )
                                 .cornerRadius(8)
                                 .onTapGesture {
@@ -132,34 +138,49 @@ struct AddFindView: View {
                                 }
                         }
                     }
-                    
+
                     // ISSUES
-                    fieldLabel("ISSUES")
-                    TextField("", text: $issues)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                    
-                    // REPAIR NOTES
-                    fieldLabel("REPAIR NOTES")
-                    TextField("", text: $repairNotes)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                    
-                    // PERSONAL NOTES
-                    fieldLabel("PERSONAL NOTES")
-                    TextField("", text: $personalNotes)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
+                    VStack(alignment: .leading, spacing: 6) {
+                        fieldLabel("ISSUES")
+                        customTextField(text: $issues, placeholder: "Light scuff on right toe")
+                    }
+
+                    // REPAIR NOTES & PERSONAL NOTES ROW
+                    HStack(spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            fieldLabel("REPAIR NOTES")
+                            customTextField(text: $repairNotes, placeholder: "Try leather balm")
+                        }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            fieldLabel("PERSONAL NOTES")
+                            customTextField(text: $personalNotes, placeholder: "Would replace my old pair")
+                        }
+                    }
+
+                    // SAVE FIND BUTTON
+                    Button {
+                        save()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "sparkles")
+                            Text("Save Find")
+                        }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color("NiftyRed"))
+                        .cornerRadius(12)
+                    }
+                    .padding(.top, 8)
+
                 }
                 .padding()
             }
-            .navigationTitle("Add New Find")
+            .navigationTitle("Add Find")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         if hasUnsavedChanges {
@@ -168,94 +189,99 @@ struct AddFindView: View {
                             onBack()
                         }
                     } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                            Text("Back")
-                        }
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Color("NiftyRed"))
                     }
-                }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        save()
-                    }
-                    .foregroundColor(Color("NiftyRed"))
-                    .fontWeight(.semibold)
                 }
             }
-            .alert(
-                "Discard this find?",
-                isPresented: $showDiscardConfirm
-            ) {
+            .alert("Discard this find?", isPresented: $showDiscardConfirm) {
                 Button("Cancel", role: .cancel) {}
-                
                 Button("Discard", role: .destructive) {
                     onBack()
                 }
             } message: {
-                Text(
-                    "Your changes haven't been saved. If you leave now, this find will be lost."
-                )
+                Text("Your changes haven't been saved. If you leave now, this find will be lost.")
             }
-            .alert(
-                "Your find has been saved.",
-                isPresented: $showSavedConfirm
-            ) {
+            .alert("Your find has been saved.", isPresented: $showSavedConfirm) {
                 Button("Okay") {
                     onBack()
                 }
             }
         }
     }
-    
+
     private var hasUnsavedChanges: Bool {
-        !findName.isEmpty ||
-        !price.isEmpty ||
-        !storeFound.isEmpty ||
-        !brand.isEmpty
+        !findName.isEmpty || !price.isEmpty || !storeFound.isEmpty || !brand.isEmpty ||
+        !issues.isEmpty || !repairNotes.isEmpty || !personalNotes.isEmpty || selectedImageData != nil
     }
-    
-    private func fieldLabel(
-        _ text: String,
-        required: Bool = false
-    ) -> some View {
+
+    private func fieldLabel(_ text: String, required: Bool = false) -> some View {
         Text(required ? "\(text)*" : text)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundColor(.secondary)
+            .font(.system(size: 10, weight: .bold))
+            .foregroundColor(Color("NiftyRed"))
     }
-    
-    private func conditionValue(
-        from displayString: String
-    ) -> FindCondition {
+
+    @ViewBuilder
+    private func customTextField(text: Binding<String>, placeholder: String, icon: String? = nil, keyboard: UIKeyboardType = .default) -> some View {
+        HStack(spacing: 6) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                    .foregroundColor(Color("NiftyRed"))
+            }
+            TextField(placeholder, text: text)
+                .keyboardType(keyboard)
+                .font(.system(size: 13))
+                .foregroundColor(Color("NiftyRed"))
+        }
+        .padding(10)
+        .background(Color(.white))
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color("NiftyGreen"), lineWidth: 2)
+        )
+    }
+
+    private func conditionValue(from displayString: String) -> FindCondition {
         switch displayString {
-        case "Excellent":
-            return .excellent
-            
-        case "Good":
-            return .good
-            
-        case "Needs Repair":
-            return .needsRepair
-            
-        case "Heavily Worn":
-            return .heavilyWorn
-            
-        default:
-            return .excellent
+        case "Excellent": return .excellent
+        case "Good": return .good
+        case "Needs Repair": return .needsRepair
+        case "Heavily Worn": return .heavilyWorn
+        default: return .excellent
         }
     }
-    
+
     private func save() {
-        guard !findName
-            .trimmingCharacters(in: .whitespaces)
-            .isEmpty,
-              let priceValue = Double(price) else {
+        // Reset validation flags at the start
+        showValidationError = false
+        showPriceValidationError = false
+        
+        // 1. Validate Name
+        guard !findName.trimmingCharacters(in: .whitespaces).isEmpty else {
             showValidationError = true
             return
         }
         
-        showValidationError = false
+        // 2. Validate Photo is Required
+        guard selectedImageData != nil else {
+            showValidationError = true
+            return
+        }
         
+        // 3. Validate Price is not empty (required field)
+        guard !price.trimmingCharacters(in: .whitespaces).isEmpty else {
+            showValidationError = true
+            return
+        }
+        
+        // 4. Validate Price is a valid number format
+        guard let priceValue = Double(price) else {
+            showPriceValidationError = true
+            return
+        }
+
         let newFind = Find(
             findName: findName,
             price: priceValue,
@@ -268,7 +294,7 @@ struct AddFindView: View {
             status: .considering,
             image: selectedImageData
         )
-        
+
         controller.addFind(newFind)
         showSavedConfirm = true
     }
