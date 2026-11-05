@@ -9,8 +9,9 @@ import SwiftUI
 
 @main
 struct NiftyApp: App {
-    @StateObject private var controller = FindController()
-    
+    // persistent: true -> data is saved on the device and survives closing the app.
+    @StateObject private var controller = FindController(persistent: true)
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -18,5 +19,3 @@ struct NiftyApp: App {
         }
     }
 }
-
-

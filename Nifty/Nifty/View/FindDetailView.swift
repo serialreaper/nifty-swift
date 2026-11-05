@@ -9,15 +9,26 @@ import SwiftUI
 
 struct FindDetailView: View {
     @EnvironmentObject var controller: FindController
-    var find: Find
+    private let initialFind: Find
     var onBack: () -> Void
+
+    /// Always the latest saved version of this find, so edits show up right away.
+    private var find: Find { controller.find(id: initialFind.id) ?? initialFind }
+
+    init(find: Find, onBack: @escaping () -> Void) {
+        self.initialFind = find
+        self.onBack = onBack
+    }
 
     @State private var showBuyConfirmation = false
     @State private var showPassConfirmation = false
     @State private var showOptionsMenu = false
+    @State private var showDeleteConfirmation = false
+    @State private var showEdit = false
+    @State private var decision: FindDecision?
 
     var body: some View {
-        NavigationStack {
+        Group {
             ZStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
@@ -56,14 +67,14 @@ struct FindDetailView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.white)
                                 
-                                Text("\(find.brand) · \(find.storeName)")
+                                Text([find.brand, find.storeName].filter { !$0.isEmpty }.joined(separator: " · "))
                                     .font(.calSans(size: 13))
                                     .foregroundColor(Color("NiftyYellow"))
                             }
                             
                             Spacer()
                             
-                            Text("$\(formattedPrice(find.price))")
+                            Text("\(Currency.string(find.price))")
                                 .font(.calSans(size: 26))
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
@@ -110,6 +121,15 @@ struct FindDetailView: View {
                             }
                         }
                         .padding(.top, 4)
+                        .disabled(find.status != .considering)
+                        .opacity(find.status == .considering ? 1 : 0.5)
+
+                        if find.status != .considering {
+                            Text("This find is already marked as \(find.status.rawValue).")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(Color("NiftyRed"))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
 
                     }
                     .padding()
@@ -117,6 +137,16 @@ struct FindDetailView: View {
                 .background(Color("NiftyGreen"))
                 .navigationTitle("Find Detail")
                 .navigationBarTitleDisplayMode(.inline)
+                .navigationBarBackButtonHidden(true)
+                .navigationDestination(isPresented: $showEdit) {
+                    EditFindView(find: find, onBack: { showEdit = false })
+                }
+                .fullScreenCover(item: $decision) { decision in
+                    DecisionSuccessView(decision: decision) {
+                        self.decision = nil
+                        onBack()
+                    }
+                }
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -144,12 +174,15 @@ struct FindDetailView: View {
 
                     CustomDialogBox(
                         title: "Bring it home?",
-                        message: "Mark these \(find.findName.lowercased()) as bought for $\(formattedPrice(find.price))?",
+                        message: "Mark these \(find.findName.lowercased()) as bought for \(Currency.string(find.price))?",
                         primaryButtonTitle: "Yes",
                         secondaryButtonTitle: "Not Yet",
                         primaryAction: {
                             showBuyConfirmation = false
-                            onBack()
+                            let snapshot = find
+                            if controller.markAsBought(snapshot) {
+                                decision = FindDecision(outcome: .bought, findName: snapshot.findName, amount: snapshot.price)
+                            }
                         },
                         secondaryAction: {
                             showBuyConfirmation = false
@@ -166,15 +199,42 @@ struct FindDetailView: View {
 
                     CustomDialogBox(
                         title: "Let this one go?",
-                        message: "Passing saves $\(formattedPrice(find.price)) and keeps your closet breathing. Nice call.",
-                        primaryButtonTitle: "Pass & Save $\(formattedPrice(find.price))",
+                        message: "Passing saves \(Currency.string(find.price)) and keeps your closet breathing. Nice call.",
+                        primaryButtonTitle: "Pass & Save \(Currency.string(find.price))",
                         secondaryButtonTitle: "Keep Considering",
                         primaryAction: {
                             showPassConfirmation = false
-                            onBack()
+                            let snapshot = find
+                            if controller.markAsPassed(snapshot) {
+                                decision = FindDecision(outcome: .passed, findName: snapshot.findName, amount: snapshot.price)
+                            }
                         },
                         secondaryAction: {
                             showPassConfirmation = false
+                        }
+                    )
+                    .padding(.horizontal, 24)
+                }
+
+                // CUSTOM DELETE DIALOG OVERLAY
+                if showDeleteConfirmation {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture { showDeleteConfirmation = false }
+
+                    CustomDialogBox(
+                        title: "Delete this find?",
+                        message: "This will permanently remove \(find.findName). This can't be undone.",
+                        primaryButtonTitle: "Delete Find",
+                        secondaryButtonTitle: "Keep Find",
+                        primaryAction: {
+                            showDeleteConfirmation = false
+                            if controller.deleteFind(find) {
+                                onBack()
+                            }
+                        },
+                        secondaryAction: {
+                            showDeleteConfirmation = false
                         }
                     )
                     .padding(.horizontal, 24)
@@ -191,12 +251,11 @@ struct FindDetailView: View {
                         FindOptionsMenuSheet(
                             onEdit: {
                                 showOptionsMenu = false
-                                // Handle Edit Find action here
+                                showEdit = true
                             },
                             onDelete: {
                                 showOptionsMenu = false
-                                controller.deleteFind(find)
-                                onBack()
+                                showDeleteConfirmation = true
                             },
                             onCancel: {
                                 showOptionsMenu = false
@@ -207,14 +266,6 @@ struct FindDetailView: View {
                     .animation(.spring(), value: showOptionsMenu)
                 }
             }
-        }
-    }
-
-    private func formattedPrice(_ price: Double) -> String {
-        if price.truncatingRemainder(dividingBy: 1) == 0 {
-            return String(format: "%.0f", price)
-        } else {
-            return String(format: "%.2f", price)
         }
     }
 
@@ -400,6 +451,16 @@ struct RoundedCorner: Shape {
             cornerRadii: CGSize(width: radius, height: radius)
         )
         return Path(path.cgPath)
+    }
+}
+
+/// Used by the Dashboard and Finds list: opens the detail screen and goes back by popping the navigation stack.
+struct FindDetailScreen: View {
+    let find: Find
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        FindDetailView(find: find, onBack: { dismiss() })
     }
 }
 

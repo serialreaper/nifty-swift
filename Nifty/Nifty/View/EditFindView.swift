@@ -25,8 +25,9 @@ struct EditFindView: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImageData: Data?
 
-    @State private var showValidationError = false
-    @State private var showPriceValidationError = false
+    @State private var validationMessage: String?
+    @State private var isLoadingPhoto = false
+    @State private var showSavedToast = false
     @State private var showDiscardConfirm = false
 
     private let conditions = ["Excellent", "Good", "Needs Repair", "Heavily Worn"]
@@ -48,16 +49,12 @@ struct EditFindView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        Group {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     
-                    if showPriceValidationError {
-                        Text("* The price must be a number.")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(Color("NiftyRed"))
-                    } else if showValidationError {
-                        Text("* Complete the required fields (including a photo) to save changes.")
+                    if let validationMessage {
+                        Text("* \(validationMessage)")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(Color("NiftyRed"))
                     }
@@ -114,12 +111,14 @@ struct EditFindView: View {
                         .background(Color("NiftyGreen"))
                         .cornerRadius(16)
                     }
-                    .onChange(of: selectedPhoto) { _, newItem in
-                        Task {
-                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                                selectedImageData = data
-                            }
+                    .overlay {
+                        if isLoadingPhoto {
+                            ProgressView()
+                                .tint(Color("NiftyRed"))
                         }
+                    }
+                    .onChange(of: selectedPhoto) { _, newItem in
+                        Task { await loadPhoto(from: newItem) }
                     }
 
                     // NAME & PRICE ROW
@@ -131,7 +130,7 @@ struct EditFindView: View {
 
                         VStack(alignment: .leading, spacing: 6) {
                             fieldLabel("PRICE", required: true)
-                            customTextField(text: $price, placeholder: "$46.00", keyboard: .decimalPad)
+                            customTextField(text: $price, placeholder: "₱46.00", keyboard: .decimalPad)
                         }
                         .frame(width: 110)
                     }
@@ -215,10 +214,14 @@ struct EditFindView: View {
                         .cornerRadius(12)
                     }
                     .padding(.top, 8)
+                    .disabled(showSavedToast)
 
                 }
                 .padding()
             }
+            .overlay(alignment: .bottom) { savedToast }
+            .animation(.easeInOut, value: showSavedToast)
+            .navigationBarBackButtonHidden(true)
             .navigationTitle("Edit Find")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -306,45 +309,81 @@ struct EditFindView: View {
     }
 
     private func saveChanges() {
-        showValidationError = false
-        showPriceValidationError = false
+        validationMessage = nil
 
-        guard !findName.trimmingCharacters(in: .whitespaces).isEmpty else {
-            showValidationError = true
-            return
+        switch FindValidator.validate(
+            name: findName,
+            priceText: price,
+            imageData: selectedImageData,
+            existing: controller.finds,
+            excludingID: find.id
+        ) {
+        case .failure(let error):
+            validationMessage = error.errorDescription
+
+        case .success(let priceValue):
+            var updatedFind = find
+            updatedFind.findName = findName.trimmingCharacters(in: .whitespacesAndNewlines)
+            updatedFind.price = priceValue
+            updatedFind.storeName = storeFound.trimmingCharacters(in: .whitespacesAndNewlines)
+            updatedFind.brand = brand.trimmingCharacters(in: .whitespacesAndNewlines)
+            updatedFind.condition = conditionValue(from: condition)
+            updatedFind.issues = issues.trimmingCharacters(in: .whitespacesAndNewlines)
+            updatedFind.repairNotes = repairNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+            updatedFind.personalNotes = personalNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+            updatedFind.image = selectedImageData
+
+            // updateFind returns false (and shows an alert) if the database save failed.
+            guard controller.updateFind(updatedFind) else { return }
+
+            showSavedToast = true
+            Task {
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                onBack()
+            }
         }
-
-        guard selectedImageData != nil else {
-            showValidationError = true
-            return
-        }
-
-        guard !price.trimmingCharacters(in: .whitespaces).isEmpty else {
-            showValidationError = true
-            return
-        }
-
-        let cleanedPrice = price.replacingOccurrences(of: "$", with: "")
-        guard let priceValue = Double(cleanedPrice) else {
-            showPriceValidationError = true
-            return
-        }
-
-        // Update find instance
-        var updatedFind = find
-        updatedFind.findName = findName
-        updatedFind.price = priceValue
-        updatedFind.storeName = storeFound
-        updatedFind.brand = brand
-        updatedFind.condition = conditionValue(from: condition)
-        updatedFind.issues = issues
-        updatedFind.repairNotes = repairNotes
-        updatedFind.personalNotes = personalNotes
-        updatedFind.image = selectedImageData
-
-        controller.updateFind(updatedFind)
-        onBack()
     }
+
+    /// "Changes saved" message from the design.
+    @ViewBuilder
+    private var savedToast: some View {
+        if showSavedToast {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle")
+                    .foregroundColor(Color("NiftyYellow"))
+                Text("Changes saved — looking nifty!")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color("NiftyRed").opacity(0.95))
+            .cornerRadius(10)
+            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+            .padding(.bottom, 24)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    /// Loads the picked photo, shrinks it, and shows a message if anything goes wrong.
+    @MainActor
+    private func loadPhoto(from item: PhotosPickerItem?) async {
+        guard let item else { return }
+        validationMessage = nil
+        isLoadingPhoto = true
+        defer { isLoadingPhoto = false }
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self),
+                  let optimized = ImageProcessor.optimizedJPEG(from: data) else {
+                validationMessage = "That photo couldn't be used. Please try another one."
+                return
+            }
+            selectedImageData = optimized
+        } catch {
+            validationMessage = "That photo couldn't be loaded. Please try another one."
+        }
+    }
+
 }
 
 #Preview {

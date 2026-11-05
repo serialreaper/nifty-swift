@@ -24,8 +24,8 @@ struct AddFindView: View {
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImageData: Data?
 
-    @State private var showValidationError = false
-    @State private var showPriceValidationError = false
+    @State private var validationMessage: String?
+    @State private var isLoadingPhoto = false
     @State private var showDiscardConfirm = false
     @State private var showSavedConfirm = false
 
@@ -36,12 +36,8 @@ struct AddFindView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     
-                    if showPriceValidationError {
-                        Text("* The price must be a number.")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(Color("NiftyRed"))
-                    } else if showValidationError {
-                        Text("* Complete the required fields to save this find.")
+                    if let validationMessage {
+                        Text("* \(validationMessage)")
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(Color("NiftyRed"))
                     }
@@ -72,12 +68,14 @@ struct AddFindView: View {
                                 }
                         }
                     }
-                    .onChange(of: selectedPhoto) { _, newItem in
-                        Task {
-                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                                selectedImageData = data
-                            }
+                    .overlay {
+                        if isLoadingPhoto {
+                            ProgressView()
+                                .tint(Color("NiftyRed"))
                         }
+                    }
+                    .onChange(of: selectedPhoto) { _, newItem in
+                        Task { await loadPhoto(from: newItem) }
                     }
 
                     // NAME & PRICE ROW
@@ -89,7 +87,7 @@ struct AddFindView: View {
 
                         VStack(alignment: .leading, spacing: 6) {
                             fieldLabel("PRICE", required: true)
-                            customTextField(text: $price, placeholder: "$46.00", keyboard: .decimalPad)
+                            customTextField(text: $price, placeholder: "₱46.00", keyboard: .decimalPad)
                         }
                         .frame(width: 110)
                     }
@@ -197,6 +195,7 @@ struct AddFindView: View {
             .alert("Discard this find?", isPresented: $showDiscardConfirm) {
                 Button("Cancel", role: .cancel) {}
                 Button("Discard", role: .destructive) {
+                    resetForm()
                     onBack()
                 }
             } message: {
@@ -204,6 +203,7 @@ struct AddFindView: View {
             }
             .alert("Your find has been saved.", isPresented: $showSavedConfirm) {
                 Button("Okay") {
+                    resetForm()
                     onBack()
                 }
             }
@@ -254,50 +254,72 @@ struct AddFindView: View {
     }
 
     private func save() {
-        // Reset validation flags at the start
-        showValidationError = false
-        showPriceValidationError = false
-        
-        // 1. Validate Name
-        guard !findName.trimmingCharacters(in: .whitespaces).isEmpty else {
-            showValidationError = true
-            return
-        }
-        
-        // 2. Validate Photo is Required
-        guard selectedImageData != nil else {
-            showValidationError = true
-            return
-        }
-        
-        // 3. Validate Price is not empty (required field)
-        guard !price.trimmingCharacters(in: .whitespaces).isEmpty else {
-            showValidationError = true
-            return
-        }
-        
-        // 4. Validate Price is a valid number format
-        guard let priceValue = Double(price) else {
-            showPriceValidationError = true
-            return
-        }
+        validationMessage = nil
 
-        let newFind = Find(
-            findName: findName,
-            price: priceValue,
-            storeName: storeFound,
-            brand: brand,
-            condition: conditionValue(from: condition),
-            issues: issues,
-            repairNotes: repairNotes,
-            personalNotes: personalNotes,
-            status: .considering,
-            image: selectedImageData
-        )
+        switch FindValidator.validate(
+            name: findName,
+            priceText: price,
+            imageData: selectedImageData,
+            existing: controller.finds
+        ) {
+        case .failure(let error):
+            validationMessage = error.errorDescription
 
-        controller.addFind(newFind)
-        showSavedConfirm = true
+        case .success(let priceValue):
+            let newFind = Find(
+                findName: findName.trimmingCharacters(in: .whitespacesAndNewlines),
+                price: priceValue,
+                storeName: storeFound.trimmingCharacters(in: .whitespacesAndNewlines),
+                brand: brand.trimmingCharacters(in: .whitespacesAndNewlines),
+                condition: conditionValue(from: condition),
+                issues: issues.trimmingCharacters(in: .whitespacesAndNewlines),
+                repairNotes: repairNotes.trimmingCharacters(in: .whitespacesAndNewlines),
+                personalNotes: personalNotes.trimmingCharacters(in: .whitespacesAndNewlines),
+                status: .considering,
+                image: selectedImageData
+            )
+
+            // addFind returns false (and shows an alert) if the database save failed.
+            if controller.addFind(newFind) {
+                showSavedConfirm = true
+            }
+        }
     }
+
+    /// Clears the form so the next visit to this tab starts fresh.
+    private func resetForm() {
+        findName = ""
+        price = ""
+        storeFound = ""
+        brand = ""
+        condition = "Good"
+        issues = ""
+        repairNotes = ""
+        personalNotes = ""
+        selectedPhoto = nil
+        selectedImageData = nil
+        validationMessage = nil
+    }
+
+    /// Loads the picked photo, shrinks it, and shows a message if anything goes wrong.
+    @MainActor
+    private func loadPhoto(from item: PhotosPickerItem?) async {
+        guard let item else { return }
+        validationMessage = nil
+        isLoadingPhoto = true
+        defer { isLoadingPhoto = false }
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self),
+                  let optimized = ImageProcessor.optimizedJPEG(from: data) else {
+                validationMessage = "That photo couldn't be used. Please try another one."
+                return
+            }
+            selectedImageData = optimized
+        } catch {
+            validationMessage = "That photo couldn't be loaded. Please try another one."
+        }
+    }
+
 }
 
 #Preview {

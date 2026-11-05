@@ -36,9 +36,9 @@ struct DashboardFindCard: View {
                     .font(.system(size: 14, weight: .bold, design: .default))
                     .foregroundStyle(.black)
                     .padding(.bottom, 10)
-                Text(status)
-                    .font(.system(size: 14, weight: .bold, design: .default))
-                    .foregroundStyle(Color("NiftyGreen"))
+                Text(status.uppercased())
+                    .font(.system(size: 12, weight: .bold, design: .default))
+                    .foregroundStyle(Color("NiftyRed"))
             }
             .padding(.leading, 10)
             Spacer()
