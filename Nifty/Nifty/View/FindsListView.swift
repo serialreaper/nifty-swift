@@ -142,7 +142,6 @@ struct FindsListView: View {
     private var emptyState: some View {
         if !trimmedQuery.isEmpty {
             MascotEmptyState(
-                label: "MASCOT — NO RESULTS",
                 title: "No matches",
                 message: "Nothing matches “\(trimmedQuery)”. Try another name, brand or store."
             )
@@ -150,25 +149,21 @@ struct FindsListView: View {
             switch selectedFilter {
             case .all:
                 MascotEmptyState(
-                    label: "MASCOT — ALL EMPTY",
                     title: "No finds yet",
                     message: "Tap + to add something tempting and give it a little breathing room."
                 )
             case .considering:
                 MascotEmptyState(
-                    label: "MASCOT — CONSIDERING EMPTY",
                     title: "Your pause zone is clear",
                     message: "New maybes will wait here while you decide without the rush."
                 )
             case .bought:
                 MascotEmptyState(
-                    label: "MASCOT — BOUGHT EMPTY",
                     title: "No buys yet",
                     message: "When a considered find earns a yes, it will live here."
                 )
             case .passed:
                 MascotEmptyState(
-                    label: "MASCOT — PASSED EMPTY",
                     title: "Your savings story starts here",
                     message: "Every thoughtful pass becomes a tiny win worth celebrating."
                 )

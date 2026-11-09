@@ -61,7 +61,7 @@ struct SplashScreenView: View {
             .padding(.bottom, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color("NiftyRed"))
+        .background(Color("NiftyLightRed"))
     }
 }
 

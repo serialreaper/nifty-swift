@@ -173,6 +173,7 @@ struct FindDetailView: View {
                         .onTapGesture { showBuyConfirmation = false }
 
                     CustomDialogBox(
+                        mascot: .bringHome,
                         title: "Bring it home?",
                         message: "Mark these \(find.findName.lowercased()) as bought for \(Currency.string(find.price))?",
                         primaryButtonTitle: "Yes",
@@ -198,6 +199,7 @@ struct FindDetailView: View {
                         .onTapGesture { showPassConfirmation = false }
 
                     CustomDialogBox(
+                        mascot: .letGo,
                         title: "Let this one go?",
                         message: "Passing saves \(Currency.string(find.price)) and keeps your closet breathing. Nice call.",
                         primaryButtonTitle: "Pass & Save \(Currency.string(find.price))",
@@ -223,6 +225,7 @@ struct FindDetailView: View {
                         .onTapGesture { showDeleteConfirmation = false }
 
                     CustomDialogBox(
+                        mascot: .toss,
                         title: "Delete this find?",
                         message: "This will permanently remove \(find.findName). This can't be undone.",
                         primaryButtonTitle: "Delete Find",
@@ -281,6 +284,7 @@ struct FindDetailView: View {
 
 // Reusable Custom Dialog Box
 struct CustomDialogBox: View {
+    var mascot: Mascot
     var title: String
     var message: String
     var primaryButtonTitle: String
@@ -290,20 +294,8 @@ struct CustomDialogBox: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            // Mascot Placeholder Box with Dashed Border
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color("NiftyRed"), style: StrokeStyle(lineWidth: 1.5, dash: [4]))
-                .frame(width: 90, height: 75)
-                .overlay {
-                    VStack(spacing: 2) {
-                        Text("N")
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(Color("NiftyRed"))
-                        Text("MASCOT DIALOG")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(Color("NiftyRed"))
-                    }
-                }
+            // Mascot
+            MascotImage(mascot: mascot, size: 90)
                 .padding(.top, 8)
 
             // Titles & Message

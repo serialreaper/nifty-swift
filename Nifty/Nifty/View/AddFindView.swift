@@ -192,19 +192,36 @@ struct AddFindView: View {
                     }
                 }
             }
-            .alert("Discard this find?", isPresented: $showDiscardConfirm) {
-                Button("Cancel", role: .cancel) {}
-                Button("Discard", role: .destructive) {
-                    resetForm()
-                    onBack()
-                }
-            } message: {
-                Text("Your changes haven't been saved. If you leave now, this find will be lost.")
-            }
             .alert("Your find has been saved.", isPresented: $showSavedConfirm) {
                 Button("Okay") {
                     resetForm()
                     onBack()
+                }
+            }
+        }
+        .overlay {
+            if showDiscardConfirm {
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                        .onTapGesture { showDiscardConfirm = false }
+
+                    CustomDialogBox(
+                        mascot: .toss,
+                        title: "Toss this draft?",
+                        message: "Your notes and photo won't be saved. You can keep editing instead.",
+                        primaryButtonTitle: "Discard Find",
+                        secondaryButtonTitle: "Keep Editing",
+                        primaryAction: {
+                            showDiscardConfirm = false
+                            resetForm()
+                            onBack()
+                        },
+                        secondaryAction: {
+                            showDiscardConfirm = false
+                        }
+                    )
+                    .padding(.horizontal, 24)
                 }
             }
         }

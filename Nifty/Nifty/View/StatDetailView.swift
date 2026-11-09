@@ -84,14 +84,6 @@ struct StatDetailView: View {
         }
     }
 
-    private var emptyLabel: String {
-        switch kind {
-        case .considering, .valueOnHold: return "MASCOT — CONSIDERING EMPTY"
-        case .savedByPassing: return "MASCOT — PASSED EMPTY"
-        case .spentOnBuys: return "MASCOT — BOUGHT EMPTY"
-        }
-    }
-
     private var listHeading: String {
         switch finds.count {
         case 0: return "No finds yet"
@@ -121,7 +113,7 @@ struct StatDetailView: View {
                             .font(.calSans(size: 30))
                             .foregroundColor(Color("NiftyRed"))
                         Text(caption)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundColor(Color("NiftyRed"))
                     }
                     Spacer()
@@ -132,11 +124,11 @@ struct StatDetailView: View {
                 .shadow(color: .black.opacity(0.1), radius: 6, y: 3)
 
                 Text(listHeading)
-                    .font(.calSans(size: 20))
+                    .font(.calSans(size: 14))
                     .foregroundColor(Color("NiftyRed"))
 
                 if finds.isEmpty {
-                    MascotEmptyState(label: emptyLabel, title: emptyTitle, message: emptyMessage)
+                    MascotEmptyState(title: emptyTitle, message: emptyMessage)
                         .padding(.top, 40)
                 } else {
                     VStack(spacing: 16) {
@@ -159,7 +151,7 @@ struct StatDetailView: View {
                     Image(systemName: "sparkles")
                     Text("That’s the whole nifty picture.")
                 }
-                .font(.system(size: 12, weight: .bold))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundColor(Color("NiftyGreen"))
                 .frame(maxWidth: .infinity)
                 .padding(.top, 24)
@@ -179,7 +171,7 @@ struct StatDetailView: View {
             }
             ToolbarItem(placement: .principal) {
                 Text(title)
-                    .font(.calSans(size: 18))
+                    .font(.calSans(size: 17))
                     .foregroundColor(Color("NiftyRed"))
             }
         }

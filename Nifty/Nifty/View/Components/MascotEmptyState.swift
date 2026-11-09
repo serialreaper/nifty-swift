@@ -8,28 +8,13 @@
 import SwiftUI
 
 struct MascotEmptyState: View {
-    let label: String      // e.g. "MASCOT — CONSIDERING EMPTY"
+    var mascot: Mascot = .empty
     let title: String
     let message: String
 
     var body: some View {
         VStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color("NiftyRed"), style: StrokeStyle(lineWidth: 1.5, dash: [4]))
-                .frame(width: 86, height: 86)
-                .overlay {
-                    VStack(spacing: 2) {
-                        Text("N")
-                            .font(.system(size: 34, weight: .bold))
-                            .foregroundColor(Color("NiftyRed"))
-                        Text(label)
-                            .font(.system(size: 6, weight: .bold))
-                            .foregroundColor(Color("NiftyRed"))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 4)
-                    }
-                }
-                .accessibilityHidden(true)
+            MascotImage(mascot: mascot, size: 110)
 
             Text(title)
                 .font(.calSans(size: 20))
@@ -48,7 +33,6 @@ struct MascotEmptyState: View {
 
 #Preview {
     MascotEmptyState(
-        label: "MASCOT — CONSIDERING EMPTY",
         title: "Your pause zone is clear",
         message: "New maybes will wait here while you decide without the rush."
     )

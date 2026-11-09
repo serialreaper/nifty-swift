@@ -27,7 +27,7 @@ struct DecisionSuccessView: View {
 
     var body: some View {
         ZStack {
-            (isBought ? Color("NiftyGreen") : Color("NiftyRed"))
+            (isBought ? Color("NiftyGreen") : Color("NiftyLightRed"))
                 .ignoresSafeArea()
 
             VStack(spacing: 24) {
@@ -43,25 +43,8 @@ struct DecisionSuccessView: View {
                 }
                 .padding(.top, 40)
 
-                // MASCOT PLACEHOLDER
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white)
-                    .frame(width: 130, height: 130)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color("NiftyRed"), style: StrokeStyle(lineWidth: 2, dash: [5]))
-                    }
-                    .overlay {
-                        VStack(spacing: 4) {
-                            Text("N")
-                                .font(.system(size: 56, weight: .bold))
-                                .foregroundColor(Color("NiftyRed"))
-                            Text(isBought ? "MASCOT — BOUGHT SUCCESS" : "MASCOT — PASSED SUCCESS")
-                                .font(.system(size: 6, weight: .bold))
-                                .foregroundColor(Color("NiftyRed"))
-                        }
-                    }
-                    .accessibilityHidden(true)
+                // MASCOT
+                MascotImage(mascot: isBought ? .bought : .passed, size: 170)
 
                 // SUMMARY CARD
                 VStack(spacing: 10) {
