@@ -12,16 +12,23 @@ struct StatCard: View {
     let label: String
     let backgroundColor: Color
     let textColor: Color
+    let chevronColor: Color
     let height: CGFloat
     
     var body: some View {
         VStack (alignment: .leading) {
 
+            HStack {
+                Text(label)
+                    .font(.calSans(size: 14))
+                    .foregroundStyle(textColor)
+                    .padding(.trailing, 30)
+                
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(chevronColor)
+                    .fontWeight(.bold)
+            }
             
-            Text(label)
-                .font(.calSans(size: 14))
-                .foregroundStyle(textColor)
-                .padding(.trailing, 30)
             
             Spacer()
             Text(value)
@@ -41,15 +48,15 @@ struct StatCard: View {
 #Preview {
     VStack {
         HStack {
-            StatCard(value: "0", label: "Considering", backgroundColor: Color("NiftyGreen"), textColor: Color.white, height: 98)
+            StatCard(value: "0", label: "Considering", backgroundColor: Color("NiftyGreen"), textColor: Color("NiftyRed"), chevronColor: Color("NiftyRed"), height: 98)
 
             
-            StatCard(value: "0", label: "Value on Hold", backgroundColor: Color("NiftyRed"), textColor: Color.white, height: 98)
+            StatCard(value: "0", label: "Value on Hold", backgroundColor: Color("NiftyRed"), textColor: Color.white, chevronColor: Color("NiftyGreen"), height: 98)
         }
         HStack {
-            StatCard(value: "0", label: "Saved by Passing", backgroundColor: Color("NiftyRed"), textColor: Color.white, height:98)
+            StatCard(value: "0", label: "Saved by Passing", backgroundColor: Color("NiftyRed"), textColor: Color.white, chevronColor: Color("NiftyGreen"), height:98)
             
-            StatCard(value: "0", label: "Spent on Buys", backgroundColor: Color("NiftyGreen"), textColor: Color.white, height: 98)
+            StatCard(value: "0", label: "Spent on Buys", backgroundColor: Color("NiftyGreen"), textColor: Color.white, chevronColor: Color("NiftyRed"), height: 98)
         }
     }
     .padding()

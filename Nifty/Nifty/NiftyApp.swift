@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+ 
 @main
 struct NiftyApp: App {
     // persistent: true -> data is saved on the device and survives closing the app.

@@ -4,9 +4,6 @@
 //
 //  Created by Mac-LAB on 9/8/26.
 //
-//  Stage 1: the controller now saves everything to a local SwiftData database.
-//  `finds` is reloaded from the database after every change, so what you see
-//  on screen is always what is actually stored.
 //
 
 import Foundation
@@ -33,8 +30,7 @@ final class FindController: ObservableObject {
     private var container: ModelContainer?
     private var context: ModelContext?
 
-    /// - Parameter persistent: `true` for the real app (saved on disk).
-    ///   `false` (the default) keeps everything in memory, which is what SwiftUI previews and tests want.
+
     init(persistent: Bool = false) {
         do {
             let configuration = ModelConfiguration(isStoredInMemoryOnly: !persistent)
@@ -148,7 +144,7 @@ final class FindController: ObservableObject {
     }
 
     // MARK: - Persistence helpers
-
+    
     private func loadFinds() {
         guard let context else { return }
         let descriptor = FetchDescriptor<FindRecord>(

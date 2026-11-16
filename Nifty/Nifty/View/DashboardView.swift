@@ -21,12 +21,12 @@ struct DashboardView: View {
 
                     VStack {
                         HStack {
-                            statLink(.considering, value: "\(controller.totalConsidering)", label: "Considering", background: Color("NiftyGreen"), text: Color("NiftyRed"))
-                            statLink(.valueOnHold, value: Currency.string(controller.totalValueOnHold), label: "Value on Hold", background: Color("NiftyRed"), text: Color("NiftyGreen"))
+                            statLink(.considering, value: "\(controller.totalConsidering)", label: "Considering", background: Color("NiftyGreen"), text: Color("NiftyRed"), chevron: Color("NiftyRed"))
+                            statLink(.valueOnHold, value: Currency.string(controller.totalValueOnHold), label: "Value on Hold", background: Color("NiftyRed"), text: Color("NiftyGreen"), chevron: Color("NiftyGreen"))
                         }
                         HStack {
-                            statLink(.savedByPassing, value: Currency.string(controller.totalSavedByPassing), label: "Saved by Passing", background: Color("NiftyRed"), text: Color("NiftyGreen"))
-                            statLink(.spentOnBuys, value: Currency.string(controller.totalSpentOnBuys), label: "Spent on Buys", background: Color("NiftyGreen"), text: Color("NiftyRed"))
+                            statLink(.savedByPassing, value: Currency.string(controller.totalSavedByPassing), label: "Saved by Passing", background: Color("NiftyRed"), text: Color("NiftyGreen"), chevron: Color("NiftyGreen"))
+                            statLink(.spentOnBuys, value: Currency.string(controller.totalSpentOnBuys), label: "Spent on Buys", background: Color("NiftyGreen"), text: Color("NiftyRed"), chevron: Color("NiftyRed"))
                         }
                     }
                     .padding(.bottom, 30)
@@ -84,9 +84,9 @@ struct DashboardView: View {
     }
 
     /// A stat card that opens its detail screen when tapped.
-    private func statLink(_ kind: StatKind, value: String, label: String, background: Color, text: Color) -> some View {
+    private func statLink(_ kind: StatKind, value: String, label: String, background: Color, text: Color, chevron: Color) -> some View {
         NavigationLink(value: kind) {
-            StatCard(value: value, label: label, backgroundColor: background, textColor: text, height: 98)
+            StatCard(value: value, label: label, backgroundColor: background, textColor: text, chevronColor: chevron, height: 98)
         }
         .buttonStyle(.plain)
     }
